@@ -4,6 +4,7 @@ pipeline {
         // Running builds concurrently could cause a race condition with
         // building the Docker image.
         disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '5')
     }
     environment {
         // Some branches have a "/" in their name (e.g. feature/new-and-cool)
@@ -27,10 +28,10 @@ pipeline {
                 }
             }
             steps {
-                echo 'Building Test Docker Image'
+                echo 'Building Mark I Voight-Kampff Docker Image'
                 sh 'cp test/Dockerfile.test Dockerfile'
-                sh 'docker build --target voight_kampff -t mycroft-core:${BRANCH_ALIAS} .'
-                echo 'Running Tests'
+                sh 'docker build --target voight_kampff_platform --build-arg PLATFORM=mycroft_mark_1 -t voight-kampff-mark-1:${BRANCH_ALIAS} .'
+                echo 'Running Mark I Voight-Kampff Test Suite'
                 timeout(time: 10, unit: 'MINUTES')
                 {
                     sh 'docker run \
@@ -39,7 +40,7 @@ pipeline {
                         -e PULSE_SERVER=unix:${XDG_RUNTIME_DIR}/pulse/native \
                         -v ${XDG_RUNTIME_DIR}/pulse/native:${XDG_RUNTIME_DIR}/pulse/native \
                         -v ~/.config/pulse/cookie:/root/.config/pulse/cookie \
-                        mycroft-core:${BRANCH_ALIAS}'
+                        voight-kampff-mark-1:${BRANCH_ALIAS}'
                 }
             }
             post {
@@ -66,6 +67,20 @@ pipeline {
                     )
                     echo 'Report Published'
                 }
+            }
+        }
+        // Build a voight_kampff image for major releases.  This will be used
+        // by the mycroft-skills repository to test skill changes.  Skills are
+        // tested against major releases to determine if they play nicely with
+        // the breaking changes included in said release.
+        stage('Build Major Release Image') {
+            when {
+                tag "*.*.0"
+            }
+            steps {
+                echo 'Building ${TAG_NAME} Docker Image for Skill Testing'
+                sh 'cp test/Dockerfile.test Dockerfile'
+                sh 'docker build --target voight_kampff -t mycroft-core:${TAG_NAME} .'
             }
         }
     }
