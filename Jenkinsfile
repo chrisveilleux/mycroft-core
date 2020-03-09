@@ -31,7 +31,7 @@ pipeline {
                 echo 'Building Mark I Voight-Kampff Docker Image'
                 sh 'cp test/Dockerfile.test Dockerfile'
                 sh 'docker build \
-                    --target voight_kampff_platform \
+                    --target voight_kampff_builder \
                     --build-arg platform=mycroft_mark_1 \
                     -t voight-kampff-mark-1:${BRANCH_ALIAS} .'
                 echo 'Running Mark I Voight-Kampff Test Suite'
