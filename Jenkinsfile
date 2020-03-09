@@ -30,7 +30,10 @@ pipeline {
             steps {
                 echo 'Building Mark I Voight-Kampff Docker Image'
                 sh 'cp test/Dockerfile.test Dockerfile'
-                sh 'docker build --target voight_kampff_platform --build-arg platform=mycroft_mark_1 -t voight-kampff-mark-1:${BRANCH_ALIAS} .'
+                sh 'docker build \
+                    --target voight_kampff_platform \
+                    --build-arg platform=mycroft_mark_1 \
+                    -t voight-kampff-mark-1:${BRANCH_ALIAS} .'
                 echo 'Running Mark I Voight-Kampff Test Suite'
                 timeout(time: 10, unit: 'MINUTES')
                 {
@@ -80,7 +83,10 @@ pipeline {
             steps {
                 echo 'Building ${TAG_NAME} Docker Image for Skill Testing'
                 sh 'cp test/Dockerfile.test Dockerfile'
-                sh 'docker build --target voight_kampff -t mycroft-core:${TAG_NAME} .'
+                sh 'docker build \
+                    --target voight_kampff_builder \
+                    --build-arg platform=mycroft_mark_1 \
+                    -t voight-kampff-skill:${TAG_NAME} .'
             }
         }
     }
