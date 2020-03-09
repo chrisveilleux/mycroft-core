@@ -72,6 +72,7 @@ EXPOSE 8181
 #   will run the "voight_kampff" integration test suite.
 #
 FROM core_builder as voight_kampff_builder
+ARG platform
 # Add the mycroft core virtual environment to the system path.
 ENV PATH /opt/mycroft/mycroft-core/.venv/bin:$PATH
 # Install required packages for test environments
@@ -81,16 +82,6 @@ RUN mkdir ~/.mycroft/allure-result
 # Generate hash of required packages
 WORKDIR /opt/mycroft/mycroft-core
 RUN md5sum requirements.txt test-requirements.txt dev_setup.sh > .installed
-
-
-# Platform-Specific Integration Test Suite Setup
-#
-#   Build against this target to set the container up as an executable that
-#   will run the "voight_kampff" integration test suite.
-#
-FROM voight_kampff_builder as voight_kampff_platform
-ARG platform
-WORKDIR /opt/mycroft/mycroft-core
 # Install default skills for the specified platform and setup entrypoint to run tests
 RUN msm -p $platform default
 RUN python -m test.integrationtests.voight_kampff.test_setup --config test/integrationtests/voight_kampff/default.yml --platform $platform
