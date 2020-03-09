@@ -88,11 +88,11 @@ RUN md5sum requirements.txt test-requirements.txt dev_setup.sh > .installed
 #   Build against this target to set the container up as an executable that
 #   will run the "voight_kampff" integration test suite.
 #
-ARG PLATFORM
 FROM voight_kampff_builder as voight_kampff_platform
+ARG platform
 WORKDIR /opt/mycroft/mycroft-core
 # Install default skills for the specified platform and setup entrypoint to run tests
-RUN msm -p ${PLATFORM} default
+RUN msm -p ${platform} default
 RUN python -m test.integrationtests.voight_kampff.test_setup --config test/integrationtests/voight_kampff/default.yml --platform ${PLATFORM}
 WORKDIR /opt/mycroft/mycroft-core/test/integrationtests/voight_kampff
 ENTRYPOINT "./run_test_suite.sh"
