@@ -6,16 +6,6 @@ pipeline {
         disableConcurrentBuilds()
         buildDiscarder(logRotator(numToKeepStr: '5'))
     }
-    environment {
-        // Some branches have a "/" in their name (e.g. feature/new-and-cool)
-        // Some commands, such as those tha deal with directories, don't
-        // play nice with this naming convention.  Define an alias for the
-        // branch name that can be used in these scenarios.
-        BRANCH_ALIAS = sh(
-            script: 'echo $BRANCH_NAME | sed -e "s#/#_#g"',
-            returnStdout: true
-        ).trim()
-    }
     stages {
         // Run the build in the against the dev branch to check for compile errors
         stage('Run Integration Tests') {
@@ -26,6 +16,16 @@ pipeline {
                     branch 'master'
                     changeRequest target: 'dev'
                 }
+            }
+            environment {
+                // Some branches have a "/" in their name (e.g. feature/new-and-cool)
+                // Some commands, such as those tha deal with directories, don't
+                // play nice with this naming convention.  Define an alias for the
+                // branch name that can be used in these scenarios.
+                BRANCH_ALIAS = sh(
+                    script: 'echo $BRANCH_NAME | sed -e "s#/#_#g"',
+                    returnStdout: true
+                ).trim()
             }
             steps {
                 echo 'Building Mark I Voight-Kampff Docker Image'
@@ -80,13 +80,23 @@ pipeline {
             when {
                 tag "*.*.0"
             }
+            environment {
+                // Tag name is usually formatted like "20.2.0" whereas skill
+                // branch names are usually "20.02".  Reformat the tag name
+                // to the skill branch format so this image will be easy to find
+                // in the mycroft-skill repository.
+                SKILL_BRANCH = sh(
+                    script: 'echo $TAG_NAME | sed -e "s/\.0//g" | sed -e "s/\./.0/g"',
+                    returnStdout: true
+                ).trim()
+            }
             steps {
                 echo 'Building ${TAG_NAME} Docker Image for Skill Testing'
                 sh 'cp test/Dockerfile.test Dockerfile'
                 sh 'docker build \
                     --target voight_kampff_builder \
                     --build-arg platform=mycroft_mark_1 \
-                    -t voight-kampff-skill:${TAG_NAME} .'
+                    -t voight-kampff-mark-1:${SKILL_BRANCH} .'
             }
         }
     }
