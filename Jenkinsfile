@@ -86,7 +86,7 @@ pipeline {
                 // to the skill branch format so this image will be easy to find
                 // in the mycroft-skill repository.
                 SKILL_BRANCH = sh(
-                    script: 'echo $TAG_NAME | sed -e "s/[.]0//g" | sed -e "s/[.]/.0/g"',
+                    script: 'echo $TAG_NAME | sed -e "s/v//g" -e "s/[.]0//g" -e "s/[.]/.0/g"',
                     returnStdout: true
                 ).trim()
             }
